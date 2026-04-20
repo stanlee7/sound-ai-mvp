@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Sound AI - Suno Connector",
+  "version": "1.0.2",
+  "description": "Suno 토큰을 Sound AI MVP에 자동으로 연결합니다",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://suno.com/*",
+    "https://*.suno.com/*",
+    "http://localhost:3000/*",
+    "https://*.vercel.app/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://suno.com/*", "https://*.suno.com/*"],
+      "js": ["interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://suno.com/*", "https://*.suno.com/*"],
+      "js": ["relay.js"],
+      "run_at": "document_start",
+      "world": "ISOLATED"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Sound AI Connector"
+  }
+}

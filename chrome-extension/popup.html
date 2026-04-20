@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 280px;
+      font-family: system-ui, sans-serif;
+      background: #0a0a0b;
+      color: #ededed;
+      padding: 16px;
+    }
+    h2 { font-size: 14px; color: #f59e0b; margin-bottom: 12px; }
+    .status { padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+    .connected  { background: #14532d; color: #86efac; }
+    .waiting    { background: #1c1917; color: #a8a29e; }
+    .server_off { background: #450a0a; color: #fca5a5; }
+    .ago { font-size: 11px; opacity: 0.7; margin-top: 3px; }
+    label { font-size: 11px; color: #9ca3af; display: block; margin-bottom: 4px; }
+    input {
+      width: 100%; padding: 7px 10px;
+      background: #1c1917; border: 1px solid #3f3f46;
+      border-radius: 6px; color: #ededed; font-size: 12px;
+      font-family: monospace;
+    }
+    input:focus { outline: none; border-color: #f59e0b; }
+    button {
+      width: 100%; margin-top: 8px; padding: 8px;
+      background: #f59e0b; color: black; border: none;
+      border-radius: 6px; font-size: 12px; font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+    .tip { font-size: 11px; color: #6b7280; line-height: 1.5; margin-top: 12px;
+           border-top: 1px solid #26262a; padding-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🎵 Sound AI Connector</h2>
+  <div id="status" class="status waiting">연결 확인 중...</div>
+
+  <label>서버 URL (배포 후 변경)</label>
+  <input id="serverUrl" type="text" placeholder="https://your-app.vercel.app" />
+  <button id="saveBtn">저장</button>
+
+  <div class="tip">
+    suno.com에서 아무 곡이나 재생하면<br>
+    자동으로 토큰이 연결됩니다.
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
