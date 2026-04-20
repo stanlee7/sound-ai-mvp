@@ -394,7 +394,7 @@ export default function Home() {
                   <img src={clip.image_url} alt="cover" className="h-14 w-14 rounded-lg object-cover" />
                 )}
                 <div>
-                  <p className="font-semibold">{clip.title || result?.data.title}</p>
+                  <p className="font-semibold">{clip.title || (result?.ok ? result.data.title : "")}</p>
                   {clip.metadata.duration && (
                     <p className="text-xs text-[var(--muted)]">{Math.round(clip.metadata.duration)}초</p>
                   )}
