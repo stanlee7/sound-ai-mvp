@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Sound AI MVP",
-  description: "Gemini 기반 Suno 자동 가사 생성 MVP",
+  description: "Groq AI 기반 Suno 자동 가사 생성 MVP",
 };
 
 export default function RootLayout({
