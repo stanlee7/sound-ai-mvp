@@ -1,7 +1,6 @@
 import { Redis } from "@upstash/redis";
 
 const REDIS_KEY = "suno:token";
-const REDIS_TS_KEY = "suno:token:ts";
 const TTL_SEC = 55;
 
 function getRedis(): Redis | null {
@@ -14,18 +13,21 @@ function getRedis(): Redis | null {
   });
 }
 
-// In-memory fallback for local dev without Redis env vars
+// In-memory fallback for local dev
 let _memToken: string | null = null;
 let _memTs = 0;
 
 export async function setToken(token: string): Promise<void> {
   const redis = getRedis();
   if (redis) {
-    await Promise.all([
-      redis.set(REDIS_KEY, token, { ex: TTL_SEC }),
-      redis.set(REDIS_TS_KEY, Date.now(), { ex: TTL_SEC }),
-    ]);
+    try {
+      await redis.set(REDIS_KEY, token, { ex: TTL_SEC });
+      console.log("[token-store] Redis SET ok");
+    } catch (e) {
+      console.error("[token-store] Redis SET error:", e);
+    }
   } else {
+    console.log("[token-store] No Redis env vars — using in-memory");
     _memToken = token;
     _memTs = Date.now();
   }
@@ -34,12 +36,15 @@ export async function setToken(token: string): Promise<void> {
 export async function getToken(): Promise<{ token: string; ageMs: number } | null> {
   const redis = getRedis();
   if (redis) {
-    const [token, ts] = await Promise.all([
-      redis.get<string>(REDIS_KEY),
-      redis.get<number>(REDIS_TS_KEY),
-    ]);
-    if (!token || !ts) return null;
-    return { token, ageMs: Date.now() - ts };
+    try {
+      const token = await redis.get<string>(REDIS_KEY);
+      console.log("[token-store] Redis GET result:", token ? "found" : "null");
+      if (!token) return null;
+      return { token, ageMs: 0 };
+    } catch (e) {
+      console.error("[token-store] Redis GET error:", e);
+      return null;
+    }
   } else {
     if (!_memToken) return null;
     const ageMs = Date.now() - _memTs;
