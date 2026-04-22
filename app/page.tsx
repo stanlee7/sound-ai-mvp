@@ -112,6 +112,32 @@ export default function Home() {
     });
   };
 
+  // 확장프로그램 경유 메시지 (Suno API를 사용자 브라우저에서 직접 호출)
+  function extMessage<T>(msg: object, timeout = 60_000): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const reqId = Math.random().toString(36).slice(2);
+      const resultType = (msg as any).type === "SOUND_AI_GENERATE"
+        ? "SOUND_AI_GENERATE_RESULT"
+        : "SOUND_AI_STATUS_RESULT";
+
+      const handler = (e: MessageEvent) => {
+        if (e.data?.type !== resultType || e.data.reqId !== reqId) return;
+        window.removeEventListener("message", handler);
+        clearTimeout(timer);
+        if (e.data.error) reject(new Error(e.data.error));
+        else resolve(e.data as T);
+      };
+
+      const timer = setTimeout(() => {
+        window.removeEventListener("message", handler);
+        reject(new Error("확장프로그램 응답 없음 — chrome://extensions에서 Sound AI Connector를 새로고침해주세요."));
+      }, timeout);
+
+      window.addEventListener("message", handler);
+      window.postMessage({ ...msg, reqId }, "*");
+    });
+  }
+
   const startPolling = (ids: string[]) => {
     let elapsed = 0;
     const INTERVAL = 15_000;
@@ -121,10 +147,10 @@ export default function Home() {
       elapsed += INTERVAL;
       setPollProgress(Math.min(90, (elapsed / MAX) * 100));
       try {
-        const res = await fetch(`/api/suno/status?ids=${ids.join(",")}`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        const allClips: SunoClip[] = data.clips;
+        const resp = await extMessage<{ data: { clips: SunoClip[] } }>(
+          { type: "SOUND_AI_STATUS", ids: ids.join(",") }
+        );
+        const allClips = resp.data.clips;
         const allDone = allClips.every((c) => c.status === "complete" || c.status === "error");
         if (allDone || elapsed >= MAX) {
           clearInterval(pollRef.current!);
@@ -145,7 +171,7 @@ export default function Home() {
   const handleSunoGenerate = async () => {
     if (!result?.ok) return;
     if (extStatus === "disconnected" || extStatus === "expired") {
-      setSunoError("Suno 연결이 끊겼습니다. suno.com을 새로고침해주세요.");
+      setSunoError("Suno 연결이 끊겼습니다. suno.com에서 곡을 재생해주세요.");
       return;
     }
     setSunoStatus("generating");
@@ -153,21 +179,23 @@ export default function Home() {
     setPollProgress(5);
     setClips([]);
     try {
-      const res = await fetch("/api/suno/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lyrics: result.data.lyrics,
-          styleTags: result.data.style_tags,
-          title: result.data.title,
-          model: sunoModel,
-          makeInstrumental: false,
+      const resp = await extMessage<{ clipIds: string[] }>(
+        {
+          type: "SOUND_AI_GENERATE",
+          payload: {
+            prompt: result.data.lyrics,
+            tags: result.data.style_tags,
+            title: result.data.title,
+            mv: sunoModel,
+            make_instrumental: false,
+            continue_clip_id: null,
+            continue_at: null,
+          },
           count: songCount,
-        }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      startPolling(data.clipIds);
+        },
+        120_000
+      );
+      startPolling(resp.clipIds);
     } catch (e) {
       setSunoStatus("error");
       setSunoError(e instanceof Error ? e.message : "생성 요청 실패");
