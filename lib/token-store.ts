@@ -1,7 +1,7 @@
 import { Redis } from "@upstash/redis";
 
 const REDIS_KEY = "suno:token";
-const TTL_SEC = 55;
+const TTL_SEC = 300; // 5분 — 탭 전환 시 여유 확보
 
 function getRedis(): Redis | null {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {

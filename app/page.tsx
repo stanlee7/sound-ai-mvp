@@ -23,7 +23,7 @@ const COUNT_OPTIONS = [
   { value: 10, label: "10곡", credits: 100 },
 ];
 
-const TOKEN_TTL = 55;
+const TOKEN_TTL = 300;
 
 type SunoStatus = "idle" | "generating" | "done" | "error";
 type ExtStatus = "checking" | "connected" | "expiring" | "expired" | "disconnected";
@@ -95,7 +95,10 @@ export default function Home() {
   useEffect(() => {
     checkToken();
     const id = setInterval(checkToken, 2000);
-    return () => clearInterval(id);
+    // 탭이 다시 활성화될 때 즉시 확인 (백그라운드 일시중단 해결)
+    const onVisible = () => { if (document.visibilityState === "visible") checkToken(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
   }, [checkToken]);
 
   const handleLyricsSubmit = (formData: FormData) => {
