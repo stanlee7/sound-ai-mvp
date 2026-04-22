@@ -23,7 +23,7 @@ const COUNT_OPTIONS = [
   { value: 10, label: "10곡", credits: 100 },
 ];
 
-const TOKEN_TTL = 300;
+const TOKEN_TTL = 60;
 
 type SunoStatus = "idle" | "generating" | "done" | "error";
 type ExtStatus = "checking" | "connected" | "expiring" | "expired" | "disconnected";

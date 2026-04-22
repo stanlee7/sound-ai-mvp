@@ -1,4 +1,4 @@
-const DEFAULT_URL = "http://localhost:3000";
+const DEFAULT_URL = "https://sound-ai-mvp.vercel.app";
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type !== "SUNO_TOKEN" || !msg.token) return;
@@ -8,14 +8,18 @@ chrome.runtime.onMessage.addListener((msg) => {
     const url = `${base}/api/suno/token`;
 
     try {
-      await fetch(url, {
+      const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: msg.token }),
       });
-      chrome.storage.local.set({ status: "connected", lastSync: Date.now() });
-    } catch {
-      chrome.storage.local.set({ status: "server_off" });
+      if (resp.ok) {
+        chrome.storage.local.set({ status: "connected", lastSync: Date.now(), lastUrl: url });
+      } else {
+        chrome.storage.local.set({ status: "server_error", lastSync: Date.now(), lastUrl: url, lastCode: resp.status });
+      }
+    } catch (e) {
+      chrome.storage.local.set({ status: "server_off", lastUrl: url, lastError: String(e) });
     }
   });
 });
