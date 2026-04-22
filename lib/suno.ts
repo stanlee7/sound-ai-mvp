@@ -25,13 +25,23 @@ export class SunoClient {
       headers: {
         Authorization: `Bearer ${this.jwt}`,
         "Content-Type": "application/json",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://suno.com",
+        "Referer": "https://suno.com/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
         ...(init?.headers ?? {}),
       },
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
+      console.error(`[suno] API error ${res.status}:`, body);
       throw new Error(`Suno API 오류 (${res.status}): ${body}`);
     }
     return res.json() as T;
