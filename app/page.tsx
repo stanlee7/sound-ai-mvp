@@ -271,54 +271,64 @@ export default function Home() {
 
           {/* ② 확장 연결 상태 */}
           <div className={`mb-5 rounded-lg border p-4 ${extUI.bg} ${extUI.text}`}>
-            {extStatus === "checking" && <p>⏳ 연결 확인 중...</p>}
+            {extStatus === "checking" && (
+              <p className="text-sm">⏳ 연결 확인 중...</p>
+            )}
 
             {extStatus === "connected" && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">✅ Suno 연결됨</p>
-                  <p className="text-xs opacity-70 mt-0.5">토큰 유효 · {tokenRemaining}초 남음</p>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="font-semibold">✅ Suno 연결됨 — 곡 생성 가능</p>
                 </div>
-                <div className="h-2 w-24 rounded-full bg-black/30">
-                  <div className="h-2 rounded-full bg-green-400 transition-all"
+                <div className="h-1.5 w-full rounded-full bg-black/30">
+                  <div className="h-1.5 rounded-full bg-green-400 transition-all"
                     style={{ width: `${((tokenRemaining ?? 0) / TOKEN_TTL) * 100}%` }} />
                 </div>
+                <p className="text-xs opacity-60 mt-1">토큰 유효 · {tokenRemaining}초 남음</p>
               </div>
             )}
 
             {extStatus === "expiring" && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">⚠️ 토큰 곧 만료</p>
-                  <p className="text-xs opacity-70 mt-0.5">{tokenRemaining}초 내에 생성 버튼을 누르세요</p>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="font-semibold">⚠️ 곧 만료 — 지금 생성하세요</p>
                 </div>
-                <div className="h-2 w-24 rounded-full bg-black/30">
-                  <div className="h-2 rounded-full bg-yellow-400 transition-all"
+                <div className="h-1.5 w-full rounded-full bg-black/30">
+                  <div className="h-1.5 rounded-full bg-yellow-400 transition-all"
                     style={{ width: `${((tokenRemaining ?? 0) / TOKEN_TTL) * 100}%` }} />
                 </div>
+                <p className="text-xs opacity-60 mt-1">{tokenRemaining}초 후 만료 · suno.com에서 곡을 재생하면 자동 갱신</p>
               </div>
             )}
 
-            {(extStatus === "expired" || extStatus === "disconnected") && (
+            {extStatus === "expired" && (
               <div>
-                <p className="font-semibold mb-2">
-                  {extStatus === "expired" ? "⏰ 토큰 만료됨" : "🔌 Suno 미연결"}
-                </p>
-                <p className="text-xs opacity-80 mb-3">
-                  {extStatus === "expired"
-                    ? "suno.com을 새로고침하면 자동으로 재연결됩니다."
-                    : "아래 순서로 Suno를 연결하세요:"}
-                </p>
-                {extStatus === "disconnected" && (
-                  <ol className="text-xs space-y-1 opacity-80 list-decimal list-inside mb-3">
-                    <li><a href="/install" target="_blank" rel="noreferrer" className="underline text-amber-300">Sound AI Connector 확장 설치</a> (처음 사용 시)</li>
-                    <li>suno.com 접속 후 로그인</li>
-                    <li>아무 곡이나 재생하면 자동 연결</li>
-                  </ol>
-                )}
+                <p className="font-semibold mb-1">⏰ 토큰 만료 — 재연결 필요</p>
+                <p className="text-xs opacity-80 mb-3">suno.com에서 아무 곡이나 재생하면 자동으로 재연결됩니다.</p>
                 <a href="https://suno.com" target="_blank" rel="noreferrer"
                   className="inline-block rounded-lg bg-white/10 hover:bg-white/20 px-4 py-2 text-sm font-semibold transition">
-                  🔗 suno.com 열기 (새 탭) →
+                  🔗 suno.com 열기 →
+                </a>
+              </div>
+            )}
+
+            {extStatus === "disconnected" && (
+              <div>
+                <p className="font-semibold mb-2">🔌 Suno 미연결</p>
+                <ol className="text-xs space-y-1.5 opacity-80 list-decimal list-inside mb-3">
+                  <li>
+                    <a href="/install" target="_blank" rel="noreferrer" className="underline text-amber-300">
+                      Sound AI Connector 확장 설치
+                    </a>
+                    {" "}(처음 사용 시)
+                  </li>
+                  <li>확장 팝업에서 이 페이지 URL 저장</li>
+                  <li>suno.com 접속 후 아무 곡이나 재생</li>
+                  <li>이 페이지로 돌아오면 자동 연결</li>
+                </ol>
+                <a href="https://suno.com" target="_blank" rel="noreferrer"
+                  className="inline-block rounded-lg bg-white/10 hover:bg-white/20 px-4 py-2 text-sm font-semibold transition">
+                  🔗 suno.com 열기 →
                 </a>
               </div>
             )}

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
+const REDIS_KEY = "suno:token";
+
 export async function GET() {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -11,9 +13,17 @@ export async function GET() {
 
   try {
     const redis = new Redis({ url, token });
-    await redis.set("debug:test", "ok", { ex: 10 });
-    const val = await redis.get("debug:test");
-    return NextResponse.json({ redis: "ok", testValue: val });
+
+    // 현재 저장된 토큰 확인
+    const stored = await redis.get<string>(REDIS_KEY);
+    const ttl = await redis.ttl(REDIS_KEY);
+
+    return NextResponse.json({
+      redis: "ok",
+      tokenStored: !!stored,
+      tokenPreview: stored ? stored.slice(0, 20) + "..." : null,
+      ttlSeconds: ttl,
+    });
   } catch (e) {
     return NextResponse.json({ redis: "error", message: String(e) });
   }
